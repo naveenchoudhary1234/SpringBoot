@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "users")   // 👈 THIS LINE ADD KARO
 public class User {
 
     @Id
