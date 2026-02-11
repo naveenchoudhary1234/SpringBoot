@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f8f9fa; }
+        .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+        h2 { text-align: center; margin-bottom: 24px; }
+        label { display: block; margin-top: 12px; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-group { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        button { padding: 8px 16px; border: none; border-radius: 4px; background: #007bff; color: #fff; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0056b3; }
+        .output { margin-top: 20px; background: #f1f1f1; padding: 10px; border-radius: 4px; min-height: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Student Management</h2>
+        <label for="roll">Roll:</label>
+        <input type="number" id="roll" />
+        <label for="name">Name:</label>
+        <input type="text" id="name" />
+        <label for="marks">Marks:</label>
+        <input type="number" id="marks" />
+        <div class="btn-group">
+            <button onclick="insertStudent()">Insert</button>
+            <button onclick="searchStudent()">Search</button>
+            <button onclick="updateStudent()">Update</button>
+            <button onclick="deleteStudent()">Delete</button>
+            <button onclick="clearForm()">Clear</button>
+        </div>
+        <div class="output" id="output"></div>
+    </div>
+    <script>
+        const api = '/api/students';
+        function getInput() {
+            return {
+                roll: document.getElementById('roll').value,
+                name: document.getElementById('name').value,
+                marks: document.getElementById('marks').value
+            };
+        }
+        function setInput(student) {
+            document.getElementById('roll').value = student.roll || '';
+            document.getElementById('name').value = student.name || '';
+            document.getElementById('marks').value = student.marks || '';
+        }
+        function showOutput(msg) {
+            document.getElementById('output').innerText = msg;
+        }
+        function insertStudent() {
+            const student = getInput();
+            fetch(api + '/insert', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(student)
+            })
+            .then(r => r.json())
+            .then(data => showOutput('Inserted: ' + JSON.stringify(data)))
+            .catch(() => showOutput('Insert failed'));
+        }
+        function searchStudent() {
+            const roll = document.getElementById('roll').value;
+            fetch(api + '/search/' + roll)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (data) {
+                    setInput(data);
+                    showOutput('Found: ' + JSON.stringify(data));
+                } else {
+                    showOutput('Student not found');
+                }
+            })
+            .catch(() => showOutput('Search failed'));
+        }
+        function updateStudent() {
+            const student = getInput();
+            fetch(api + '/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(student)
+            })
+            .then(r => r.json())
+            .then(data => showOutput('Updated: ' + JSON.stringify(data)))
+            .catch(() => showOutput('Update failed'));
+        }
+        function deleteStudent() {
+            const roll = document.getElementById('roll').value;
+            fetch(api + '/delete/' + roll, { method: 'DELETE' })
+            .then(r => r.ok ? showOutput('Deleted') : showOutput('Delete failed'));
+        }
+        function clearForm() {
+            setInput({ roll: '', name: '', marks: '' });
+            showOutput('Cleared');
+        }
+    </script>
+</body>
+</html>
